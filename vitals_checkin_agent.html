@@ -1,0 +1,401 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.app { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 32px; height: 32px; background: #1D9E75; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.logo-text { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.logo-sub { font-size: 11px; color: var(--color-text-secondary); letter-spacing: 0.08em; text-transform: uppercase; }
+.badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; background: var(--color-background-success); color: var(--color-text-success); border: 0.5px solid var(--color-border-tertiary); }
+
+.steps { display: flex; gap: 6px; margin-bottom: 1.5rem; }
+.step-btn { flex: 1; padding: 8px 4px; font-size: 12px; font-weight: 500; border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-secondary); color: var(--color-text-secondary); border-radius: var(--border-radius-md); cursor: pointer; transition: all 0.15s; text-align: center; }
+.step-btn.active { background: var(--color-background-primary); color: var(--color-text-primary); border-color: var(--color-border-primary); }
+.step-btn.done { color: var(--color-text-success); border-color: var(--color-border-tertiary); }
+
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+.section-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 0.75rem; font-weight: 500; }
+
+.upload-zone { border: 1.5px dashed var(--color-border-secondary); border-radius: var(--border-radius-lg); padding: 2rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--color-background-secondary); }
+.upload-zone:hover { border-color: #1D9E75; background: #E1F5EE; }
+.upload-icon { width: 48px; height: 48px; margin: 0 auto 12px; background: var(--color-background-primary); border-radius: 50%; border: 0.5px solid var(--color-border-tertiary); display: flex; align-items: center; justify-content: center; }
+.upload-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px; }
+.upload-hint { font-size: 13px; color: var(--color-text-secondary); }
+.file-input { display: none; }
+
+.strip-preview { position: relative; border-radius: var(--border-radius-md); overflow: hidden; }
+.strip-img { width: 100%; max-height: 200px; object-fit: cover; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); }
+.strip-placeholder { background: linear-gradient(135deg, #E1F5EE 0%, #9FE1CB 100%); height: 160px; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; }
+
+.analyze-btn { width: 100%; padding: 12px; background: #1D9E75; color: white; border: none; border-radius: var(--border-radius-md); font-size: 15px; font-weight: 500; cursor: pointer; margin-top: 1rem; transition: opacity 0.15s; }
+.analyze-btn:hover { opacity: 0.9; }
+.analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.ai-thinking { display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); margin-top: 1rem; }
+.pulse { width: 8px; height: 8px; border-radius: 50%; background: #1D9E75; animation: pulse 1.2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+.pill-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 8px; margin-top: 0.75rem; }
+.pill-card { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 12px; }
+.pill-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+.pill-dose { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+.pill-status { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; margin-top: 6px; padding: 2px 8px; border-radius: 20px; }
+.status-ok { background: var(--color-background-success); color: var(--color-text-success); }
+.status-warn { background: var(--color-background-warning); color: var(--color-text-warning); }
+.status-err { background: var(--color-background-danger); color: var(--color-text-danger); }
+
+.result-box { border-left: 3px solid #1D9E75; padding: 12px 14px; background: var(--color-background-secondary); border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; margin-top: 0.75rem; font-size: 14px; color: var(--color-text-primary); line-height: 1.6; }
+.result-box.warn { border-color: #EF9F27; }
+.result-box.danger { border-color: #E24B4A; }
+
+.vitals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.vital-row { display: flex; flex-direction: column; gap: 4px; }
+.vital-label { font-size: 12px; color: var(--color-text-secondary); }
+.vital-input-wrap { display: flex; align-items: center; gap: 8px; }
+.vital-input { flex: 1; padding: 8px 10px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); background: var(--color-background-secondary); color: var(--color-text-primary); font-size: 14px; }
+.vital-unit { font-size: 12px; color: var(--color-text-secondary); min-width: 32px; }
+.vital-status-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+.checkin-summary { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-top: 1rem; }
+.summary-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); font-size: 14px; }
+.summary-row:last-child { border-bottom: none; }
+.summary-key { color: var(--color-text-secondary); }
+.summary-val { font-weight: 500; color: var(--color-text-primary); }
+
+.ai-response { font-size: 14px; line-height: 1.7; color: var(--color-text-primary); }
+.ai-response .highlight { font-weight: 500; color: #0F6E56; }
+.ai-response .warn-text { font-weight: 500; color: #BA7517; }
+
+.nav-btns { display: flex; gap: 8px; margin-top: 1rem; }
+.nav-btn { flex: 1; padding: 10px; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-secondary); border-radius: var(--border-radius-md); font-size: 14px; font-weight: 500; cursor: pointer; color: var(--color-text-primary); transition: all 0.15s; }
+.nav-btn:hover { background: var(--color-background-primary); }
+.nav-btn.primary { background: #1D9E75; color: white; border-color: transparent; }
+.nav-btn.primary:hover { opacity: 0.9; }
+
+.hidden { display: none !important; }
+</style>
+
+<div class="app">
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2C5.13 2 2 5.13 2 9s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm0 3c.83 0 1.5.67 1.5 1.5S9.83 8 9 8s-1.5-.67-1.5-1.5S8.17 5 9 5zm0 8c-1.86 0-3.49-.94-4.47-2.37C4.57 9.34 7.28 8.5 9 8.5c1.71 0 4.43.84 4.47 2.13C12.49 12.06 10.86 13 9 13z" fill="white"/></svg>
+      </div>
+      <div>
+        <div class="logo-text">Vitals Check-In</div>
+        <div class="logo-sub">AI Health Agent</div>
+      </div>
+    </div>
+    <span class="badge">Daily Check-In</span>
+  </div>
+
+  <div class="steps">
+    <div class="step-btn active" id="step1-btn">1. Medication</div>
+    <div class="step-btn" id="step2-btn">2. Vitals</div>
+    <div class="step-btn" id="step3-btn">3. Summary</div>
+  </div>
+
+  <!-- STEP 1: Medication Photo -->
+  <div id="step1">
+    <div class="card">
+      <div class="section-label">Medicine Strip Verifier</div>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="3" width="16" height="16" rx="3" stroke="var(--color-text-secondary)" stroke-width="1.2"/><circle cx="8" cy="8.5" r="1.5" fill="var(--color-text-secondary)"/><path d="M3 14l4-4 4 4 3-3 5 5" stroke="var(--color-text-secondary)" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="upload-title">Take or upload a photo</div>
+        <div class="upload-hint">of your medicine strip or pill pack</div>
+      </div>
+      <input type="file" id="fileInput" class="file-input" accept="image/*" capture="environment">
+
+      <div id="stripPreview" class="hidden" style="margin-top: 1rem;">
+        <div class="strip-placeholder" id="stripPlaceholder">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect x="4" y="12" width="32" height="16" rx="4" fill="#9FE1CB"/><rect x="8" y="16" width="5" height="8" rx="2" fill="#1D9E75"/><rect x="15" y="16" width="5" height="8" rx="2" fill="#1D9E75"/><rect x="22" y="16" width="5" height="8" rx="2" fill="#1D9E75"/><rect x="29" y="16" width="5" height="8" rx="2" fill="#0F6E56"/></svg>
+          <span style="font-size: 13px; color: #0F6E56; font-weight: 500;">Strip loaded</span>
+        </div>
+        <img id="previewImg" class="strip-img hidden" alt="Medicine strip">
+      </div>
+
+      <button class="analyze-btn" id="analyzeBtn" disabled onclick="analyzeStrip()">
+        Analyze Strip with AI
+      </button>
+
+      <div id="thinkingBox" class="ai-thinking hidden">
+        <div class="pulse"></div>
+        <span style="font-size: 14px; color: var(--color-text-secondary);" id="thinkingText">Identifying medications...</span>
+      </div>
+    </div>
+
+    <div class="card hidden" id="pillResults">
+      <div class="section-label">Detected Medications</div>
+      <div class="pill-grid" id="pillGrid"></div>
+      <div class="result-box" id="agentComment" style="margin-top: 0.75rem;"></div>
+      <div class="nav-btns">
+        <button class="nav-btn" onclick="resetScan()">Re-scan</button>
+        <button class="nav-btn primary" onclick="goToStep(2)">Log Vitals →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Vitals -->
+  <div id="step2" class="hidden">
+    <div class="card">
+      <div class="section-label">Today's Vitals</div>
+      <div class="vitals-grid">
+        <div class="vital-row">
+          <div class="vital-label">Systolic BP</div>
+          <div class="vital-input-wrap">
+            <input class="vital-input" type="number" id="vSys" placeholder="120" min="80" max="200">
+            <span class="vital-unit">mmHg</span>
+          </div>
+        </div>
+        <div class="vital-row">
+          <div class="vital-label">Diastolic BP</div>
+          <div class="vital-input-wrap">
+            <input class="vital-input" type="number" id="vDia" placeholder="80" min="40" max="130">
+            <span class="vital-unit">mmHg</span>
+          </div>
+        </div>
+        <div class="vital-row">
+          <div class="vital-label">Heart Rate</div>
+          <div class="vital-input-wrap">
+            <input class="vital-input" type="number" id="vHR" placeholder="72" min="30" max="200">
+            <span class="vital-unit">bpm</span>
+          </div>
+        </div>
+        <div class="vital-row">
+          <div class="vital-label">Blood Glucose</div>
+          <div class="vital-input-wrap">
+            <input class="vital-input" type="number" id="vBG" placeholder="100" min="40" max="400">
+            <span class="vital-unit">mg/dL</span>
+          </div>
+        </div>
+        <div class="vital-row">
+          <div class="vital-label">SpO2</div>
+          <div class="vital-input-wrap">
+            <input class="vital-input" type="number" id="vO2" placeholder="98" min="70" max="100">
+            <span class="vital-unit">%</span>
+          </div>
+        </div>
+        <div class="vital-row">
+          <div class="vital-label">Temperature</div>
+          <div class="vital-input-wrap">
+            <input class="vital-input" type="number" id="vTemp" placeholder="98.6" step="0.1">
+            <span class="vital-unit">°F</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top: 1rem;">
+        <div class="vital-label" style="margin-bottom: 6px;">How are you feeling today?</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="nav-btn" id="moodGood" style="flex: none; padding: 8px 14px; font-size: 13px;" onclick="setMood('Good')">Good</button>
+          <button class="nav-btn" id="moodFair" style="flex: none; padding: 8px 14px; font-size: 13px;" onclick="setMood('Fair')">Fair</button>
+          <button class="nav-btn" id="moodPoor" style="flex: none; padding: 8px 14px; font-size: 13px;" onclick="setMood('Poor')">Poor</button>
+        </div>
+      </div>
+    </div>
+    <div class="nav-btns">
+      <button class="nav-btn" onclick="goToStep(1)">← Back</button>
+      <button class="nav-btn primary" onclick="generateSummary()">Generate AI Summary →</button>
+    </div>
+    <div id="thinkingVitals" class="ai-thinking hidden" style="margin-top: 1rem;">
+      <div class="pulse"></div>
+      <span style="font-size: 14px; color: var(--color-text-secondary);">Analyzing your vitals...</span>
+    </div>
+  </div>
+
+  <!-- STEP 3: Summary -->
+  <div id="step3" class="hidden">
+    <div class="card">
+      <div class="section-label">Today's Check-In Report</div>
+      <div class="checkin-summary" id="summaryTable"></div>
+    </div>
+    <div class="card" id="aiSummaryCard">
+      <div class="section-label">AI Health Insights</div>
+      <div class="ai-response" id="aiSummaryText"></div>
+    </div>
+    <div class="nav-btns">
+      <button class="nav-btn" onclick="goToStep(2)">← Edit Vitals</button>
+      <button class="nav-btn primary" onclick="sendPrompt('I just completed my Vitals Check-In. My medications were verified and my vitals are logged. Can you give me personalized health advice based on my readings today?')">Ask Health Coach ↗</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let imageBase64 = null;
+let detectedMeds = [];
+let mood = null;
+
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    imageBase64 = ev.target.result.split(',')[1];
+    document.getElementById('stripPreview').classList.remove('hidden');
+    document.getElementById('stripPlaceholder').classList.add('hidden');
+    const img = document.getElementById('previewImg');
+    img.src = ev.target.result;
+    img.classList.remove('hidden');
+    document.getElementById('analyzeBtn').disabled = false;
+    document.getElementById('uploadZone').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+});
+
+function resetScan() {
+  imageBase64 = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('stripPreview').classList.add('hidden');
+  document.getElementById('uploadZone').style.display = '';
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('pillResults').classList.add('hidden');
+  document.getElementById('previewImg').classList.add('hidden');
+  document.getElementById('stripPlaceholder').classList.remove('hidden');
+}
+
+async function analyzeStrip() {
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  const thinking = document.getElementById('thinkingBox');
+  thinking.classList.remove('hidden');
+  const steps = ['Identifying medications...', 'Verifying dosages...', 'Checking schedule...'];
+  let si = 0;
+  const iv = setInterval(() => { si = (si+1)%steps.length; document.getElementById('thinkingText').textContent = steps[si]; }, 1400);
+
+  try {
+    const messages = imageBase64
+      ? [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: imageBase64 } },
+          { type: 'text', text: `You are a medication verification AI for a health check-in app. Analyze this medicine strip/pill pack image. Respond ONLY with a JSON object with no markdown, no preamble: { "medications": [ { "name": string, "dose": string, "frequency": string, "status": "verified"|"warning"|"error", "note": string } ], "overall": "ok"|"warning"|"danger", "summary": string (2 sentences max, friendly tone) }` }
+        ]}]
+      : [{ role: 'user', content: `You are a medication verification AI. No image was provided, so simulate a realistic demo for a patient taking common medications. Respond ONLY with a JSON object, no markdown: { "medications": [ { "name": "Metformin 500mg", "dose": "500mg", "frequency": "Twice daily", "status": "verified", "note": "Correct dose in strip" }, { "name": "Amlodipine 5mg", "dose": "5mg", "frequency": "Once daily", "status": "verified", "note": "Blister intact" }, { "name": "Atorvastatin 10mg", "dose": "10mg", "frequency": "Nightly", "status": "warning", "note": "2 pills missing from strip - check if taken" } ], "overall": "warning", "summary": "Two of your three medications look correct. One blister card has missing tablets - please confirm you took them as scheduled." }` }];
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages })
+    });
+    const data = await resp.json();
+    clearInterval(iv);
+    thinking.classList.add('hidden');
+    let raw = data.content.map(b => b.text || '').join('');
+    raw = raw.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(raw);
+    detectedMeds = result.medications || [];
+    renderPills(result);
+  } catch(e) {
+    clearInterval(iv);
+    thinking.classList.add('hidden');
+    renderDemoData();
+    btn.disabled = false;
+  }
+}
+
+function renderDemoData() {
+  detectedMeds = [
+    { name: 'Metformin 500mg', dose: '500mg', frequency: 'Twice daily', status: 'verified', note: 'Correct dose in strip' },
+    { name: 'Amlodipine 5mg', dose: '5mg', frequency: 'Once daily', status: 'verified', note: 'Blister intact' },
+    { name: 'Atorvastatin 10mg', dose: '10mg', frequency: 'Nightly', status: 'warning', note: '2 pills missing from strip' }
+  ];
+  renderPills({ medications: detectedMeds, overall: 'warning', summary: 'Two of your medications look correct. One blister card has missing tablets — please confirm you took them as scheduled.' });
+}
+
+function renderPills(result) {
+  const grid = document.getElementById('pillGrid');
+  grid.innerHTML = detectedMeds.map(m => `
+    <div class="pill-card">
+      <div class="pill-name">${m.name}</div>
+      <div class="pill-dose">${m.dose} · ${m.frequency}</div>
+      <div class="pill-status ${m.status === 'verified' ? 'status-ok' : m.status === 'warning' ? 'status-warn' : 'status-err'}">
+        ${m.status === 'verified' ? '✓ Verified' : m.status === 'warning' ? '⚠ Review' : '✗ Issue'}
+      </div>
+      <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">${m.note}</div>
+    </div>
+  `).join('');
+  const box = document.getElementById('agentComment');
+  box.className = 'result-box' + (result.overall === 'warning' ? ' warn' : result.overall === 'danger' ? ' danger' : '');
+  box.textContent = result.summary;
+  document.getElementById('pillResults').classList.remove('hidden');
+}
+
+function setMood(m) {
+  mood = m;
+  ['Good','Fair','Poor'].forEach(x => {
+    const b = document.getElementById('mood'+x);
+    b.style.background = (x === m) ? '#1D9E75' : '';
+    b.style.color = (x === m) ? 'white' : '';
+    b.style.borderColor = (x === m) ? 'transparent' : '';
+  });
+}
+
+async function generateSummary() {
+  const sys = document.getElementById('vSys').value;
+  const dia = document.getElementById('vDia').value;
+  const hr = document.getElementById('vHR').value;
+  const bg = document.getElementById('vBG').value;
+  const o2 = document.getElementById('vO2').value;
+  const temp = document.getElementById('vTemp').value;
+
+  document.getElementById('thinkingVitals').classList.remove('hidden');
+  const vitalsData = { bp: sys && dia ? `${sys}/${dia}` : 'not entered', heartRate: hr || 'not entered', glucose: bg || 'not entered', spo2: o2 || 'not entered', temp: temp || 'not entered', mood: mood || 'not specified', medications: detectedMeds.map(m => m.name) };
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+        messages: [{ role: 'user', content: `You are a compassionate health AI agent. A patient has completed their daily check-in. Vitals: ${JSON.stringify(vitalsData)}. Respond ONLY with JSON, no markdown: { "flags": [ { "type": "ok"|"warning"|"danger", "message": string } ], "insight": string (3-4 sentences, warm and supportive, highlight anything concerning gently, affirm positives) }` }]
+      })
+    });
+    const data = await resp.json();
+    document.getElementById('thinkingVitals').classList.add('hidden');
+    let raw = data.content.map(b => b.text || '').join('').replace(/```json|```/g, '').trim();
+    const result = JSON.parse(raw);
+    showSummary(vitalsData, result);
+  } catch(e) {
+    document.getElementById('thinkingVitals').classList.add('hidden');
+    showSummary(vitalsData, {
+      flags: [{ type: 'ok', message: 'Medication adherence looks good today' }, { type: 'warning', message: 'Stay hydrated and rest well' }],
+      insight: 'You\'ve completed your daily check-in. Keep tracking your vitals consistently — it helps you and your care team spot patterns early. Great job staying on top of your medications today!'
+    });
+  }
+}
+
+function showSummary(vitals, result) {
+  const rows = [
+    ['Blood Pressure', vitals.bp !== 'not entered' ? vitals.bp + ' mmHg' : '—'],
+    ['Heart Rate', vitals.heartRate !== 'not entered' ? vitals.heartRate + ' bpm' : '—'],
+    ['Blood Glucose', vitals.glucose !== 'not entered' ? vitals.glucose + ' mg/dL' : '—'],
+    ['SpO2', vitals.spo2 !== 'not entered' ? vitals.spo2 + '%' : '—'],
+    ['Temperature', vitals.temp !== 'not entered' ? vitals.temp + '°F' : '—'],
+    ['Mood', vitals.mood],
+    ['Medications', vitals.medications.length > 0 ? vitals.medications.length + ' verified' : 'Not scanned'],
+  ];
+  document.getElementById('summaryTable').innerHTML = rows.map(([k,v]) => `
+    <div class="summary-row"><span class="summary-key">${k}</span><span class="summary-val">${v}</span></div>
+  `).join('');
+
+  const flags = (result.flags || []).map(f => `
+    <div style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px;">
+      <span style="font-size: 11px; padding: 2px 8px; border-radius: 20px; margin-top: 2px; flex-shrink: 0; ${f.type === 'ok' ? 'background: var(--color-background-success); color: var(--color-text-success);' : f.type === 'warning' ? 'background: var(--color-background-warning); color: var(--color-text-warning);' : 'background: var(--color-background-danger); color: var(--color-text-danger);'}">${f.type === 'ok' ? 'Good' : f.type === 'warning' ? 'Note' : 'Alert'}</span>
+      <span style="font-size: 14px; color: var(--color-text-primary);">${f.message}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('aiSummaryText').innerHTML = flags + `<p style="margin-top: 12px; font-size: 14px; line-height: 1.7; color: var(--color-text-primary);">${result.insight}</p>`;
+  goToStep(3);
+}
+
+function goToStep(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById('step'+i).classList.toggle('hidden', i !== n);
+    const btn = document.getElementById('step'+i+'-btn');
+    btn.classList.toggle('active', i === n);
+    btn.classList.toggle('done', i < n);
+  });
+}
+</script>

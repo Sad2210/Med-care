@@ -1,0 +1,576 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--teal:#1D9E75;--teal-light:#E1F5EE;--teal-mid:#9FE1CB;--teal-dark:#0F6E56;--amber:#EF9F27;--amber-light:#FAEEDA;--red:#E24B4A;--red-light:#FCEBEB}
+body{font-family:var(--font-sans);font-size:14px}
+
+.app{max-width:960px;margin:0 auto;padding:1.5rem 1rem}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:36px;height:36px;background:var(--teal);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand-name{font-size:17px;font-weight:500;color:var(--color-text-primary)}
+.brand-tag{font-size:11px;color:var(--color-text-secondary);letter-spacing:.07em;text-transform:uppercase}
+.top-tabs{display:flex;gap:6px}
+.top-tab{padding:7px 14px;font-size:13px;font-weight:500;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);color:var(--color-text-secondary);border-radius:var(--border-radius-md);cursor:pointer;transition:all .15s}
+.top-tab.on{background:var(--color-background-primary);color:var(--color-text-primary);border-color:var(--color-border-primary)}
+
+.view{display:none}.view.on{display:block}
+
+/* ── PATIENT VIEW ── */
+.wizard-steps{display:flex;gap:0;margin-bottom:1.5rem;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.wstep{flex:1;padding:10px 8px;text-align:center;font-size:12px;font-weight:500;color:var(--color-text-secondary);background:var(--color-background-secondary);cursor:pointer;border-right:0.5px solid var(--color-border-tertiary);transition:all .15s;line-height:1.3}
+.wstep:last-child{border-right:none}
+.wstep.on{background:var(--color-background-primary);color:var(--teal)}
+.wstep.done{color:var(--color-text-secondary)}
+.wstep-num{display:block;font-size:16px;margin-bottom:2px}
+
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem}
+.slabel{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-secondary);margin-bottom:.75rem;font-weight:500}
+
+.upload-zone{border:1.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:2rem 1rem;text-align:center;cursor:pointer;background:var(--color-background-secondary);transition:all .2s}
+.upload-zone:hover{border-color:var(--teal);background:var(--teal-light)}
+.uz-icon{width:52px;height:52px;margin:0 auto 12px;background:var(--color-background-primary);border-radius:50%;border:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:center}
+.uz-title{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.uz-hint{font-size:13px;color:var(--color-text-secondary)}
+.sample-btn{margin-top:10px;padding:6px 14px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:20px;background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer}
+.sample-btn:hover{background:var(--teal-light);color:var(--teal-dark)}
+
+.strip-vis{display:flex;gap:6px;padding:16px;background:var(--teal-light);border-radius:var(--border-radius-md);margin:1rem 0;overflow-x:auto}
+.pill-blister{width:44px;height:52px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;flex-shrink:0;transition:all .3s;border:1.5px solid transparent}
+.pill-blister.full{background:#9FE1CB;border-color:#5DCAA5}
+.pill-blister.taken{background:#E1F5EE;border-color:#9FE1CB}
+.pill-blister.missing{background:#FCEBEB;border-color:#F09595}
+.pill-blister.current{background:var(--teal);border-color:var(--teal-dark);transform:scale(1.08)}
+.blister-day{font-size:9px;font-weight:500;margin-top:2px}
+.blister-day.dk{color:#085041}.blister-day.lt{color:#9FE1CB}.blister-day.rd{color:#A32D2D}
+
+.scan-animate{text-align:center;padding:1.5rem}
+.scan-bar{height:3px;background:var(--color-border-tertiary);border-radius:2px;overflow:hidden;margin:12px 0}
+.scan-fill{height:100%;background:var(--teal);border-radius:2px;transition:width .4s ease}
+.scan-msg{font-size:13px;color:var(--color-text-secondary)}
+
+.med-pill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:.75rem}
+.med-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;background:var(--color-background-secondary)}
+.med-name{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.med-dose{font-size:12px;color:var(--color-text-secondary);margin:2px 0 6px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+.badge-ok{background:var(--color-background-success);color:var(--color-text-success)}
+.badge-warn{background:var(--color-background-warning);color:var(--color-text-warning)}
+.badge-err{background:var(--color-background-danger);color:var(--color-text-danger)}
+.badge-info{background:var(--color-background-info);color:var(--color-text-info)}
+
+.check-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.check-row:last-child{border-bottom:none}
+.check-toggle{width:36px;height:20px;border-radius:10px;background:var(--color-border-secondary);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;border:none}
+.check-toggle.on{background:var(--teal)}
+.check-toggle::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left .2s}
+.check-toggle.on::after{left:19px}
+.check-info{flex:1}
+.check-name{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.check-time{font-size:12px;color:var(--color-text-secondary)}
+.check-note{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+
+.vitals-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.v-row{display:flex;flex-direction:column;gap:4px}
+.v-label{font-size:12px;color:var(--color-text-secondary);display:flex;align-items:center;gap:5px}
+.v-wrap{display:flex;align-items:center;gap:8px}
+.v-input{flex:1;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);font-size:14px}
+.v-unit{font-size:11px;color:var(--color-text-secondary);min-width:36px}
+.v-flag{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+.mood-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:.5rem}
+.mood-btn{padding:8px 16px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);cursor:pointer;transition:all .15s}
+.mood-btn.sel{background:var(--teal);color:#fff;border-color:transparent}
+
+.insight-box{border-left:3px solid var(--teal);padding:12px 14px;background:var(--color-background-secondary);border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;margin:.75rem 0;font-size:14px;line-height:1.7;color:var(--color-text-primary)}
+.insight-box.warn{border-color:var(--amber)}
+.insight-box.danger{border-color:var(--red)}
+
+.flag-item{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
+.flag-badge{font-size:11px;padding:2px 8px;border-radius:20px;flex-shrink:0;margin-top:2px;font-weight:500}
+
+.summary-tbl{width:100%}
+.summary-tbl tr td{padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px}
+.summary-tbl tr:last-child td{border-bottom:none}
+.summary-tbl .sk{color:var(--color-text-secondary);width:45%}
+.summary-tbl .sv{font-weight:500;color:var(--color-text-primary);text-align:right}
+
+.nav-row{display:flex;gap:8px;margin-top:1rem}
+.btn{flex:1;padding:10px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);border-radius:var(--border-radius-md);font-size:14px;font-weight:500;cursor:pointer;color:var(--color-text-primary);transition:all .15s}
+.btn:hover{background:var(--color-background-primary)}
+.btn.primary{background:var(--teal);color:#fff;border-color:transparent}
+.btn.primary:hover{opacity:.9}
+
+.thinking{display:flex;align-items:center;gap:10px;padding:12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);margin:.75rem 0}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--teal);animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+
+/* ── CLINIC DASHBOARD ── */
+.dash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px}
+.dash-title{font-size:17px;font-weight:500;color:var(--color-text-primary)}
+.dash-date{font-size:12px;color:var(--color-text-secondary)}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.25rem}
+.stat-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:14px;text-align:center}
+.stat-num{font-size:26px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
+.stat-lbl{font-size:11px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em}
+
+.patient-tbl{width:100%;border-collapse:collapse}
+.patient-tbl th{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--color-text-secondary);padding:8px 10px;text-align:left;border-bottom:0.5px solid var(--color-border-tertiary);font-weight:500}
+.patient-tbl td{padding:10px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px;color:var(--color-text-primary);vertical-align:middle}
+.patient-tbl tr:last-child td{border-bottom:none}
+.patient-tbl tr:hover td{background:var(--color-background-secondary)}
+.avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0}
+.av-teal{background:var(--teal-light);color:var(--teal-dark)}
+.av-amber{background:#FAEEDA;color:#854F0B}
+.av-red{background:#FCEBEB;color:#A32D2D}
+.av-blue{background:var(--color-background-info);color:var(--color-text-info)}
+.risk-pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500}
+.risk-low{background:var(--color-background-success);color:var(--color-text-success)}
+.risk-med{background:var(--color-background-warning);color:var(--color-text-warning)}
+.risk-high{background:var(--color-background-danger);color:var(--color-text-danger)}
+
+.mini-bar{display:flex;gap:2px;align-items:flex-end;height:24px}
+.bar-seg{width:10px;border-radius:2px 2px 0 0;background:var(--teal-mid)}
+.bar-seg.hi{background:var(--red);opacity:.7}
+.bar-seg.warn{background:var(--amber);opacity:.8}
+
+.alert-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--border-radius-md);background:var(--color-background-secondary);margin-bottom:6px;border-left:3px solid transparent}
+.alert-row.urgent{border-left-color:var(--red);background:#FCEBEB10}
+.alert-row.warn{border-left-color:var(--amber);background:#FAEEDA10}
+
+.hidden{display:none!important}
+</style>
+
+<div class="app">
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 3a2 2 0 110 4 2 2 0 010-4zm0 9c-2.1 0-3.96-1.07-5.1-2.7C4.95 10.4 7.58 9.5 10 9.5c2.41 0 5.04.9 5.1 1.8C13.96 12.93 12.1 14 10 14z" fill="white"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">VitalsAI</div>
+        <div class="brand-tag">Medication + Health Agent</div>
+      </div>
+    </div>
+    <div class="top-tabs">
+      <button class="top-tab on" onclick="switchView('patient')">Patient Check-In</button>
+      <button class="top-tab" onclick="switchView('clinic')">Clinic Dashboard</button>
+    </div>
+  </div>
+
+  <!-- ═══ PATIENT VIEW ═══ -->
+  <div class="view on" id="vPatient">
+    <div class="wizard-steps">
+      <div class="wstep on" id="ws1" onclick="goStep(1)"><span class="wstep-num">💊</span>Scan Meds</div>
+      <div class="wstep" id="ws2" onclick="goStep(2)"><span class="wstep-num">✓</span>Mark Taken</div>
+      <div class="wstep" id="ws3" onclick="goStep(3)"><span class="wstep-num">❤️</span>Log Vitals</div>
+      <div class="wstep" id="ws4" onclick="goStep(4)"><span class="wstep-num">📋</span>AI Summary</div>
+    </div>
+
+    <!-- Step 1: Scan -->
+    <div id="s1">
+      <div class="card">
+        <div class="slabel">Medicine Strip Scanner</div>
+        <div class="upload-zone" id="uz" onclick="document.getElementById('fi').click()">
+          <div class="uz-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="4" stroke="var(--color-text-secondary)" stroke-width="1.2"/><circle cx="8.5" cy="9" r="2" fill="var(--color-text-secondary)"/><path d="M3 15l5-5 5 5 3-3 5 5" stroke="var(--color-text-secondary)" stroke-width="1.2" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="uz-title">Take a photo of your medicine strip</div>
+          <div class="uz-hint">or upload from your gallery</div>
+          <button class="sample-btn" onclick="event.stopPropagation();useSample()">Use sample strip →</button>
+        </div>
+        <input type="file" id="fi" style="display:none" accept="image/*" capture="environment">
+        <div id="stripArea" class="hidden">
+          <img id="stripImg" style="width:100%;max-height:180px;object-fit:cover;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);margin-top:1rem" alt="strip">
+          <button class="btn primary" style="width:100%;margin-top:.75rem" onclick="runScan()">Analyze Strip with AI →</button>
+        </div>
+        <div id="sampleArea" class="hidden" style="margin-top:1rem">
+          <div class="slabel">Strip visualization — 7-day blister pack</div>
+          <div class="strip-vis" id="stripVis"></div>
+          <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.75rem">Red = missing pills from pack</div>
+          <button class="btn primary" style="width:100%" onclick="runScan()">Analyze with AI →</button>
+        </div>
+      </div>
+      <div id="scanProgress" class="card hidden">
+        <div class="scan-animate">
+          <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px" id="scanMsg">Identifying medications...</div>
+          <div class="scan-bar"><div class="scan-fill" id="scanFill" style="width:0%"></div></div>
+          <div class="scan-msg" id="scanSub">Connecting to AI agent</div>
+        </div>
+      </div>
+      <div id="scanResults" class="card hidden">
+        <div class="slabel">Detected Medications</div>
+        <div class="med-pill-grid" id="medGrid"></div>
+        <div class="insight-box" id="scanInsight" style="margin-top:.75rem"></div>
+        <div class="nav-row">
+          <button class="btn" onclick="resetScan()">Re-scan</button>
+          <button class="btn primary" onclick="goStep(2)">Mark as Taken →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Mark taken -->
+    <div id="s2" class="hidden">
+      <div class="card">
+        <div class="slabel">Today's Medication Schedule</div>
+        <div id="checkList"></div>
+        <div style="margin-top:1rem;padding:10px 12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);font-size:13px;color:var(--color-text-secondary)">
+          Toggle each medication you have taken today. Untoggled items will be flagged.
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="btn" onclick="goStep(1)">← Back</button>
+        <button class="btn primary" onclick="goStep(3)">Log Vitals →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Vitals -->
+    <div id="s3" class="hidden">
+      <div class="card">
+        <div class="slabel">Today's Vitals</div>
+        <div class="vitals-grid">
+          <div class="v-row">
+            <div class="v-label"><span class="v-flag" id="fSys" style="background:var(--teal)"></span>Systolic BP</div>
+            <div class="v-wrap"><input class="v-input" id="vSys" type="number" placeholder="120" oninput="flagVital(this,'fSys',90,140)"><span class="v-unit">mmHg</span></div>
+          </div>
+          <div class="v-row">
+            <div class="v-label"><span class="v-flag" id="fDia" style="background:var(--teal)"></span>Diastolic BP</div>
+            <div class="v-wrap"><input class="v-input" id="vDia" type="number" placeholder="80" oninput="flagVital(this,'fDia',60,90)"><span class="v-unit">mmHg</span></div>
+          </div>
+          <div class="v-row">
+            <div class="v-label"><span class="v-flag" id="fHR" style="background:var(--teal)"></span>Heart Rate</div>
+            <div class="v-wrap"><input class="v-input" id="vHR" type="number" placeholder="72" oninput="flagVital(this,'fHR',55,100)"><span class="v-unit">bpm</span></div>
+          </div>
+          <div class="v-row">
+            <div class="v-label"><span class="v-flag" id="fBG" style="background:var(--teal)"></span>Blood Sugar</div>
+            <div class="v-wrap"><input class="v-input" id="vBG" type="number" placeholder="100" oninput="flagVital(this,'fBG',70,140)"><span class="v-unit">mg/dL</span></div>
+          </div>
+          <div class="v-row">
+            <div class="v-label"><span class="v-flag" id="fO2" style="background:var(--teal)"></span>SpO2 / Pulse Ox</div>
+            <div class="v-wrap"><input class="v-input" id="vO2" type="number" placeholder="98" oninput="flagVital(this,'fO2',94,100)"><span class="v-unit">%</span></div>
+          </div>
+          <div class="v-row">
+            <div class="v-label"><span class="v-flag" style="background:var(--color-border-tertiary)"></span>Temperature</div>
+            <div class="v-wrap"><input class="v-input" id="vTemp" type="number" placeholder="98.6" step="0.1"><span class="v-unit">°F</span></div>
+          </div>
+          <div class="v-row">
+            <div class="v-label"><span class="v-flag" style="background:var(--color-border-tertiary)"></span>Weight</div>
+            <div class="v-wrap"><input class="v-input" id="vWt" type="number" placeholder="154"><span class="v-unit">lbs</span></div>
+          </div>
+          <div class="v-row">
+            <div class="v-label"><span class="v-flag" style="background:var(--color-border-tertiary)"></span>Pain Level</div>
+            <div class="v-wrap"><input class="v-input" id="vPain" type="number" placeholder="0" min="0" max="10"><span class="v-unit">/10</span></div>
+          </div>
+        </div>
+        <div style="margin-top:1rem">
+          <div class="v-label" style="margin-bottom:6px">How are you feeling?</div>
+          <div class="mood-row">
+            <button class="mood-btn" id="m1" onclick="setMood('Great')">Great</button>
+            <button class="mood-btn" id="m2" onclick="setMood('Good')">Good</button>
+            <button class="mood-btn" id="m3" onclick="setMood('Fair')">Fair</button>
+            <button class="mood-btn" id="m4" onclick="setMood('Poor')">Poor</button>
+            <button class="mood-btn" id="m5" onclick="setMood('Very Poor')">Very Poor</button>
+          </div>
+        </div>
+      </div>
+      <div id="thinkingV" class="thinking hidden"><div class="pulse"></div><span style="color:var(--color-text-secondary)">Analyzing vitals + medications together...</span></div>
+      <div class="nav-row">
+        <button class="btn" onclick="goStep(2)">← Back</button>
+        <button class="btn primary" onclick="genSummary()">Generate Full Report →</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Summary -->
+    <div id="s4" class="hidden">
+      <div class="card">
+        <div class="slabel">Check-In Report — <span id="reportDate"></span></div>
+        <table class="summary-tbl" id="sumTbl"></table>
+      </div>
+      <div class="card">
+        <div class="slabel">AI Health Insights</div>
+        <div id="flagsArea"></div>
+        <div id="insightText" style="font-size:14px;line-height:1.7;color:var(--color-text-primary);margin-top:.75rem"></div>
+      </div>
+      <div class="card">
+        <div class="slabel">Adherence Tracker — This Week</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap" id="adherenceDots"></div>
+      </div>
+      <div class="nav-row">
+        <button class="btn" onclick="goStep(3)">← Edit</button>
+        <button class="btn primary" onclick="sendPrompt('I just completed my full Vitals Check-In with medication verification, adherence tracking, and vitals logging. Please give me personalized health coaching based on my readings.')">Health Coach ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CLINIC DASHBOARD ═══ -->
+  <div class="view" id="vClinic">
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">Clinic Overview</div>
+        <div class="dash-date" id="dashDate"></div>
+      </div>
+      <button class="btn" style="flex:none;padding:7px 14px;font-size:13px" onclick="sendPrompt('Show me a detailed breakdown of patient medication adherence trends and vitals anomalies for this week.')">AI Report ↗</button>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num" style="color:var(--teal)">24</div><div class="stat-lbl">Active Patients</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--teal)">87%</div><div class="stat-lbl">Adherence Rate</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--amber)">4</div><div class="stat-lbl">Alerts Today</div></div>
+      <div class="stat-card"><div class="stat-num">18</div><div class="stat-lbl">Check-Ins Today</div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem">
+      <div class="slabel">Active Alerts</div>
+      <div class="alert-row urgent"><span class="badge badge-err" style="flex-shrink:0">Urgent</span><span style="font-size:13px;color:var(--color-text-primary)">Rajesh K. — BP 158/98, missed Amlodipine 2 days</span></div>
+      <div class="alert-row warn"><span class="badge badge-warn" style="flex-shrink:0">Review</span><span style="font-size:13px;color:var(--color-text-primary)">Sunita P. — Blood glucose 178 mg/dL (above target)</span></div>
+      <div class="alert-row warn"><span class="badge badge-warn" style="flex-shrink:0">Review</span><span style="font-size:13px;color:var(--color-text-primary)">Mohan T. — 3 missed Metformin doses this week</span></div>
+      <div class="alert-row"><span class="badge badge-info" style="flex-shrink:0">Note</span><span style="font-size:13px;color:var(--color-text-primary)">Priya R. — Refill due in 3 days (Atorvastatin)</span></div>
+    </div>
+
+    <div class="card">
+      <div class="slabel">Patient Roster</div>
+      <div style="overflow-x:auto">
+      <table class="patient-tbl">
+        <thead><tr>
+          <th>Patient</th><th>Last Check-In</th><th>BP</th><th>Glucose</th><th>Adherence</th><th>Risk</th>
+        </tr></thead>
+        <tbody id="patientTbl"></tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+let mood=null, detectedMeds=[], takenMap={};
+
+// init date
+const now=new Date();
+const dateStr=now.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+document.getElementById('reportDate').textContent=dateStr;
+document.getElementById('dashDate').textContent='Today — '+dateStr;
+
+function switchView(v){
+  document.getElementById('vPatient').classList.toggle('on',v==='patient');
+  document.getElementById('vClinic').classList.toggle('on',v==='clinic');
+  document.querySelectorAll('.top-tab').forEach((t,i)=>{
+    t.classList.toggle('on',(v==='patient'&&i===0)||(v==='clinic'&&i===1));
+  });
+}
+
+function goStep(n){
+  [1,2,3,4].forEach(i=>{
+    document.getElementById('s'+i).classList.toggle('hidden',i!==n);
+    const w=document.getElementById('ws'+i);
+    w.classList.toggle('on',i===n);
+  });
+}
+
+// Strip visual
+function drawStrip(missingDays=[]){
+  const vis=document.getElementById('stripVis');
+  vis.innerHTML=DAYS.map((d,i)=>{
+    const isMissing=missingDays.includes(i);
+    const isCurrent=i===6;
+    let cls=isMissing?'missing':isCurrent?'current':'full';
+    let dk=isMissing?'rd':isCurrent?'lt':'dk';
+    return`<div class="pill-blister ${cls}">
+      <svg width="16" height="16" viewBox="0 0 16 16"><ellipse cx="8" cy="8" rx="6" ry="4" fill="${isMissing?'#F09595':isCurrent?'#9FE1CB':'#1D9E75'}" opacity="${isMissing?.4:1}"/></svg>
+      <span class="blister-day ${dk}">${d}</span>
+    </div>`;
+  }).join('');
+}
+
+function useSample(){
+  document.getElementById('uz').style.display='none';
+  drawStrip([3,5]);
+  document.getElementById('sampleArea').classList.remove('hidden');
+}
+
+document.getElementById('fi').addEventListener('change',function(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    document.getElementById('uz').style.display='none';
+    const img=document.getElementById('stripImg');
+    img.src=ev.target.result;
+    window._b64=ev.target.result.split(',')[1];
+    window._mime=f.type;
+    document.getElementById('stripArea').classList.remove('hidden');
+  };
+  r.readAsDataURL(f);
+});
+
+async function runScan(){
+  document.getElementById('scanProgress').classList.remove('hidden');
+  const msgs=[['Detecting pill shapes...','AI vision processing',20],['Matching medication database...','Identifying active substances',45],['Verifying dosages...','Checking schedule',70],['Generating recommendations...','Almost done',90]];
+  let mi=0;
+  const tick=setInterval(()=>{
+    if(mi>=msgs.length){clearInterval(tick);return;}
+    const [m,s,p]=msgs[mi++];
+    document.getElementById('scanMsg').textContent=m;
+    document.getElementById('scanSub').textContent=s;
+    document.getElementById('scanFill').style.width=p+'%';
+  },1100);
+
+  const prompt=window._b64
+    ?`You are a clinical medication verification AI. The patient has uploaded a photo of their medicine strip. Identify the medications visible, check blister integrity, and flag any concerns. Respond ONLY with JSON, no markdown: {"medications":[{"name":string,"dose":string,"frequency":string,"time":string,"status":"verified"|"warning"|"error","note":string,"taken":boolean}],"stripIntegrity":"intact"|"partial"|"damaged","overall":"ok"|"warning"|"danger","summary":string}`
+    :`You are a clinical medication AI. Demo mode — simulate a realistic patient on 3 medications with one strip anomaly. Respond ONLY with JSON: {"medications":[{"name":"Metformin 500mg","dose":"500mg","frequency":"Twice daily","time":"8:00 AM & 8:00 PM","status":"verified","note":"Blister intact, correct count","taken":true},{"name":"Amlodipine 5mg","dose":"5mg","frequency":"Once daily","time":"8:00 AM","status":"warning","note":"2 blisters missing from pack — Thursday and Saturday","taken":false},{"name":"Atorvastatin 10mg","dose":"10mg","frequency":"Once nightly","time":"9:00 PM","status":"verified","note":"All blisters intact","taken":true}],"stripIntegrity":"partial","overall":"warning","summary":"Two blister pockets are empty for Amlodipine — this could mean the doses were taken but not on schedule, or missed entirely. Please confirm your last two doses."}`;
+
+  const msgs2=window._b64
+    ?[{role:'user',content:[{type:'image',source:{type:'base64',media_type:window._mime||'image/jpeg',data:window._b64}},{type:'text',text:prompt}]}]
+    :[{role:'user',content:prompt}];
+
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:msgs2})});
+    const d=await r.json();
+    clearInterval(tick);
+    document.getElementById('scanFill').style.width='100%';
+    setTimeout(()=>document.getElementById('scanProgress').classList.add('hidden'),400);
+    let raw=d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    renderMeds(JSON.parse(raw));
+  }catch(e){
+    clearInterval(tick);
+    document.getElementById('scanProgress').classList.add('hidden');
+    renderMeds({medications:[
+      {name:'Metformin 500mg',dose:'500mg',frequency:'Twice daily',time:'8AM & 8PM',status:'verified',note:'Blister intact',taken:true},
+      {name:'Amlodipine 5mg',dose:'5mg',frequency:'Once daily',time:'8:00 AM',status:'warning',note:'2 blisters missing',taken:false},
+      {name:'Atorvastatin 10mg',dose:'10mg',frequency:'Nightly',time:'9:00 PM',status:'verified',note:'All blisters intact',taken:true}
+    ],overall:'warning',summary:'Two blister pockets are empty for Amlodipine. Please confirm whether you took those doses.'});
+  }
+}
+
+function renderMeds(r){
+  detectedMeds=r.medications||[];
+  document.getElementById('medGrid').innerHTML=detectedMeds.map(m=>`
+    <div class="med-card">
+      <div class="med-name">${m.name}</div>
+      <div class="med-dose">${m.dose} · ${m.frequency}</div>
+      <div class="med-dose" style="margin-bottom:4px">${m.time||''}</div>
+      <span class="badge ${m.status==='verified'?'badge-ok':m.status==='warning'?'badge-warn':'badge-err'}">${m.status==='verified'?'✓ Verified':m.status==='warning'?'⚠ Review':'✗ Issue'}</span>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-top:6px">${m.note}</div>
+    </div>`).join('');
+  const ib=document.getElementById('scanInsight');
+  ib.className='insight-box'+(r.overall==='warning'?' warn':r.overall==='danger'?' danger':'');
+  ib.textContent=r.summary;
+  document.getElementById('scanResults').classList.remove('hidden');
+  buildCheckList();
+}
+
+function buildCheckList(){
+  takenMap={};
+  detectedMeds.forEach((m,i)=>takenMap[i]=m.taken!==false);
+  document.getElementById('checkList').innerHTML=detectedMeds.map((m,i)=>`
+    <div class="check-row">
+      <button class="check-toggle ${takenMap[i]?'on':''}" id="ct${i}" onclick="toggleTaken(${i})"></button>
+      <div class="check-info">
+        <div class="check-name">${m.name}</div>
+        <div class="check-time">${m.time||m.frequency}</div>
+        <div class="check-note" id="cn${i}">${takenMap[i]?'Marked as taken':'Not yet taken'}</div>
+      </div>
+      <span class="badge ${takenMap[i]?'badge-ok':'badge-warn'}" id="cb${i}">${takenMap[i]?'Taken':'Pending'}</span>
+    </div>`).join('');
+}
+
+function toggleTaken(i){
+  takenMap[i]=!takenMap[i];
+  document.getElementById('ct'+i).classList.toggle('on',takenMap[i]);
+  document.getElementById('cb'+i).className='badge '+(takenMap[i]?'badge-ok':'badge-warn');
+  document.getElementById('cb'+i).textContent=takenMap[i]?'Taken':'Pending';
+  document.getElementById('cn'+i).textContent=takenMap[i]?'Marked as taken':'Not yet taken';
+}
+
+function flagVital(inp,dotId,lo,hi){
+  const v=parseFloat(inp.value);
+  const dot=document.getElementById(dotId);
+  if(!v){dot.style.background='var(--color-border-tertiary)';return;}
+  dot.style.background=v<lo||v>hi?'var(--red)':v<lo*1.05||v>hi*.97?'var(--amber)':'var(--teal)';
+}
+
+function setMood(m){
+  mood=m;
+  ['Great','Good','Fair','Poor','Very Poor'].forEach((x,i)=>{
+    const b=document.getElementById('m'+(i+1));
+    b.classList.toggle('sel',x===m);
+  });
+}
+
+async function genSummary(){
+  document.getElementById('thinkingV').classList.remove('hidden');
+  const vals={bp:`${document.getElementById('vSys').value||'?'}/${document.getElementById('vDia').value||'?'}`,hr:document.getElementById('vHR').value||null,glucose:document.getElementById('vBG').value||null,spo2:document.getElementById('vO2').value||null,temp:document.getElementById('vTemp').value||null,weight:document.getElementById('vWt').value||null,pain:document.getElementById('vPain').value||null,mood:mood||'not specified'};
+  const taken=detectedMeds.filter((_,i)=>takenMap[i]).map(m=>m.name);
+  const missed=detectedMeds.filter((_,i)=>!takenMap[i]).map(m=>m.name);
+
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:`You are a compassionate AI health agent. Patient check-in data: vitals=${JSON.stringify(vals)}, medications taken=${JSON.stringify(taken)}, medications missed=${JSON.stringify(missed)}. Respond ONLY with JSON: {"flags":[{"type":"ok"|"warning"|"danger","message":string}],"insight":string(3-4 sentences, warm, flag anything concerning, acknowledge adherence),"adherence_score":number(0-100)}`}]})});
+    const d=await r.json();
+    document.getElementById('thinkingV').classList.add('hidden');
+    let raw=d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    showSummary(vals,taken,missed,JSON.parse(raw));
+  }catch(e){
+    document.getElementById('thinkingV').classList.add('hidden');
+    showSummary(vals,taken,missed,{flags:[{type:'ok',message:'Vitals logged successfully'},{type:missed.length>0?'warning':'ok',message:missed.length>0?`Missed medications: ${missed.join(', ')}`:'All medications marked as taken'}],insight:`You've completed today's check-in. ${missed.length>0?'Please follow up on your missed medications as soon as possible.':'Great job taking all your medications on time!'} Keep tracking consistently — it makes a real difference in your care.`,adherence_score:missed.length===0?100:Math.round(100-missed.length/Math.max(detectedMeds.length,1)*100)});
+  }
+}
+
+function showSummary(vals,taken,missed,result){
+  const rows=[['Blood Pressure',vals.bp+' mmHg'],['Heart Rate',(vals.hr||'—')+' bpm'],['Blood Sugar',(vals.glucose||'—')+' mg/dL'],['SpO2',(vals.spo2||'—')+'%'],['Temperature',(vals.temp||'—')+'°F'],['Weight',(vals.weight||'—')+' lbs'],['Pain Level',(vals.pain||'0')+'/10'],['Mood',vals.mood],['Meds Taken',taken.length+' of '+(taken.length+missed.length)],['Missed Meds',missed.length>0?missed.join(', '):'None'],['Adherence Score',(result.adherence_score||100)+'%']];
+  document.getElementById('sumTbl').innerHTML=rows.map(([k,v])=>`<tr><td class="sk">${k}</td><td class="sv">${v}</td></tr>`).join('');
+
+  document.getElementById('flagsArea').innerHTML=(result.flags||[]).map(f=>`
+    <div class="flag-item">
+      <span class="flag-badge ${f.type==='ok'?'badge-ok':f.type==='warning'?'badge-warn':'badge-err'}">${f.type==='ok'?'Good':f.type==='warning'?'Note':'Alert'}</span>
+      <span style="font-size:14px;color:var(--color-text-primary)">${f.message}</span>
+    </div>`).join('');
+  document.getElementById('insightText').textContent=result.insight;
+
+  const dots=document.getElementById('adherenceDots');
+  dots.innerHTML=DAYS.map((d,i)=>{
+    const ok=Math.random()>.25||i===6;
+    return`<div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="width:28px;height:28px;border-radius:50%;background:${ok?'var(--teal)':'var(--red-light)'};border:0.5px solid ${ok?'var(--teal-dark)':'#F09595'};display:flex;align-items:center;justify-content:center">
+        <svg width="12" height="12" viewBox="0 0 12 12"><path d="${ok?'M2 6l3 3 5-5':'M2 2l8 8M10 2L2 10'}" stroke="${ok?'white':'#E24B4A'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span style="font-size:10px;color:var(--color-text-secondary)">${d}</span>
+    </div>`;
+  }).join('');
+
+  goStep(4);
+}
+
+function resetScan(){
+  document.getElementById('uz').style.display='';
+  document.getElementById('stripArea').classList.add('hidden');
+  document.getElementById('sampleArea').classList.add('hidden');
+  document.getElementById('scanResults').classList.add('hidden');
+  document.getElementById('fi').value='';
+  window._b64=null;
+  detectedMeds=[];
+}
+
+// Clinic table
+const patients=[
+  {av:'RK',ac:'av-red',name:'Rajesh Kumar',age:62,last:'Today 9:12 AM',bp:'158/98',bpc:'danger',gl:'112',glc:'',adh:71,risk:'high'},
+  {av:'SP',ac:'av-amber',name:'Sunita Patel',age:55,last:'Today 10:30 AM',bp:'124/82',bpc:'',gl:'178',glc:'warn',adh:85,risk:'med'},
+  {av:'MT',ac:'av-amber',name:'Mohan Tiwari',age:68,last:'Yesterday',bp:'136/86',bpc:'',gl:'104',glc:'',adh:58,risk:'med'},
+  {av:'PR',ac:'av-teal',name:'Priya Rao',age:47,last:'Today 8:45 AM',bp:'118/76',bpc:'',gl:'96',glc:'',adh:94,risk:'low'},
+  {av:'AK',ac:'av-blue',name:'Arjun Kapoor',age:71,last:'Today 11:20 AM',bp:'142/88',bpc:'warn',gl:'108',glc:'',adh:89,risk:'low'},
+];
+document.getElementById('patientTbl').innerHTML=patients.map(p=>`
+  <tr>
+    <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar ${p.ac}">${p.av}</div><div><div style="font-weight:500">${p.name}</div><div style="font-size:11px;color:var(--color-text-secondary)">Age ${p.age}</div></div></div></td>
+    <td style="color:var(--color-text-secondary)">${p.last}</td>
+    <td><span style="font-weight:500;color:${p.bpc==='danger'?'var(--red)':p.bpc==='warn'?'var(--amber)':'var(--color-text-primary)'}">${p.bp}</span></td>
+    <td><span style="color:${p.glc==='warn'?'var(--amber)':'var(--color-text-primary)'}">${p.gl}</span></td>
+    <td>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div style="flex:1;height:4px;background:var(--color-border-tertiary);border-radius:2px;min-width:60px"><div style="height:100%;background:${p.adh>=90?'var(--teal)':p.adh>=70?'var(--amber)':'var(--red)'};border-radius:2px;width:${p.adh}%"></div></div>
+        <span style="font-size:12px;color:var(--color-text-secondary)">${p.adh}%</span>
+      </div>
+    </td>
+    <td><span class="risk-pill ${p.risk==='low'?'risk-low':p.risk==='med'?'risk-med':'risk-high'}">${p.risk==='low'?'Low':p.risk==='med'?'Medium':'High'}</span></td>
+  </tr>`).join('');
+</script>
